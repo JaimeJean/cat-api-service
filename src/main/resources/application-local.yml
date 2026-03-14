@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/catapi
+    username: catapi
+    password: catapi123
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    show-sql: true
+
+# TheCatAPI
+catapi:
+  base-url: https://api.thecatapi.com/v1
+  api-key: ${CAT_API_KEY:}
+
+# LocalStack (SQS/SNS/SES)
+cloud:
+  aws:
+    region:
+      static: us-east-1
+    endpoint: http://localhost:4566
+    credentials:
+      access-key: test
+      secret-key: test
