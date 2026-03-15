@@ -1,0 +1,16 @@
+#!/bin/sh
+echo ">>> Verificando formatação do código (Spotless)..."
+
+mvn spotless:check -q
+
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "============================================"
+    echo " COMMIT BLOQUEADO: código fora do padrão."
+    echo " Rode 'mvn spotless:apply' para corrigir."
+    echo "============================================"
+    exit 1
+fi
+
+echo ">>> Formatação OK."
+exit 0
