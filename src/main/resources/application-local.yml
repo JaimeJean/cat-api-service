@@ -9,8 +9,28 @@ spring:
     show-sql: true
 
 catapi:
-  base-url: https://api.thecatapi.com/v1
-  api-key: ${CAT_API_KEY:}
+  api:
+    base-url: https://api.thecatapi.com/v1
+    key: ${CAT_API_KEY:DEMO-API-KEY}
+    connect-timeout: 5000
+    read-timeout: 10000
+  ingestion:
+    images-per-breed: 3
+    category-images-limit: 3
+    max-concurrent-requests: 5
+
+resilience4j:
+  retry:
+    instances:
+      catApi:
+        max-attempts: 5
+        wait-duration: 3s
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - org.springframework.web.client.ResourceAccessException
+          - org.springframework.web.client.HttpClientErrorException$TooManyRequests
 
 cloud:
   aws:
