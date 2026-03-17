@@ -4,6 +4,7 @@ import com.github.jaimejean.catapi.config.IngestionPropertiesConfig;
 import com.github.jaimejean.catapi.domain.entities.Breed;
 import com.github.jaimejean.catapi.domain.entities.Image;
 import com.github.jaimejean.catapi.domain.enums.ImageCategory;
+import com.github.jaimejean.catapi.domain.exceptions.CatApiIntegrationException;
 import com.github.jaimejean.catapi.domain.ports.in.DataIngestionService;
 import com.github.jaimejean.catapi.domain.ports.out.BreedRepository;
 import com.github.jaimejean.catapi.domain.ports.out.CatApiClient;
@@ -41,17 +42,24 @@ public class DataIngestionServiceImpl implements DataIngestionService {
 
   private List<Breed> ingestBreeds() {
     List<Breed> breedsFromApi = catApiClient.fetchAllBreeds();
+    if (breedsFromApi.isEmpty()) {
+
+      throw new CatApiIntegrationException(
+          "TheCatAPI retornou lista vazia de raças — ingestão abortada");
+    }
+
     log.info("Raças encontradas na API: {}", breedsFromApi.size());
 
     return breedRepository.saveAll(breedsFromApi);
   }
 
   private void ingestBreedImages(List<Breed> breeds) {
+    // controle de concorrência
     Semaphore semaphore = new Semaphore(properties.getMaxConcurrentRequests());
 
     try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
 
-      // Submete uma virtual thread por raça — todas são criadas de uma vez,
+      // Submete uma virtual thread por raça (todas são criadas de uma vez)
       // mas o semaphore controla quantas acessam a API ao mesmo tempo
       List<? extends Future<?>> futures =
           breeds.stream()

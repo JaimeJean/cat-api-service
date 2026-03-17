@@ -15,10 +15,4 @@ public interface BreedRepository {
   Optional<Breed> findById(Long id);
 
   Page<Breed> search(String temperament, String origin, Pageable pageable);
-
-  List<Breed> findAll();
-
-  List<Breed> findByTemperamentContainingIgnoreCase(String parameter);
-
-  List<Breed> findByOriginIgnoreCase(String parameter);
 }

@@ -37,6 +37,7 @@ public class TheCatApiAdapter implements CatApiClient {
 
     log.debug("Buscando todas as raças: {}", url);
 
+    // exchange para deserializar a lista evitando erros de run time
     List<BreedApiResponse> response =
         catApiRestTemplate
             .exchange(
