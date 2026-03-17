@@ -1,5 +1,6 @@
 package com.github.jaimejean.catapi.services;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -11,6 +12,7 @@ import com.github.jaimejean.catapi.config.IngestionPropertiesConfig;
 import com.github.jaimejean.catapi.domain.entities.Breed;
 import com.github.jaimejean.catapi.domain.entities.Image;
 import com.github.jaimejean.catapi.domain.enums.ImageCategory;
+import com.github.jaimejean.catapi.domain.exceptions.CatApiIntegrationException;
 import com.github.jaimejean.catapi.domain.ports.out.BreedRepository;
 import com.github.jaimejean.catapi.domain.ports.out.CatApiClient;
 import com.github.jaimejean.catapi.domain.ports.out.ImageRepository;
@@ -73,25 +75,19 @@ class DataIngestionServiceImplTest {
 
       verify(breedRepository).saveAll(breeds);
       verify(catApiClient).fetchImagesByBreed(breed, 3);
-      verify(imageRepository, times(3)).saveAll(anyList()); // breed + hat + glasses
+      verify(imageRepository, times(3)).saveAll(anyList());
     }
 
     @Test
-    @DisplayName("deve funcionar com lista vazia de raças da API")
-    void shouldHandleEmptyBreedsFromApi() {
+    @DisplayName("deve lançar exceção quando API retorna lista vazia de raças")
+    void shouldThrowExceptionWhenBreedsListIsEmpty() {
       when(catApiClient.fetchAllBreeds()).thenReturn(Collections.emptyList());
-      when(breedRepository.saveAll(Collections.emptyList())).thenReturn(Collections.emptyList());
-      when(imageRepository.existsByCategoryAndBreedIdIsNull(ImageCategory.HAT)).thenReturn(false);
-      when(catApiClient.fetchImagesByCategory(ImageCategory.HAT, 3))
-          .thenReturn(Collections.emptyList());
-      when(imageRepository.existsByCategoryAndBreedIdIsNull(ImageCategory.GLASSES))
-          .thenReturn(false);
-      when(catApiClient.fetchImagesByCategory(ImageCategory.GLASSES, 3))
-          .thenReturn(Collections.emptyList());
 
-      dataIngestionService.ingest();
+      assertThrows(CatApiIntegrationException.class, () -> dataIngestionService.ingest());
 
+      verify(breedRepository, never()).saveAll(anyList());
       verify(catApiClient, never()).fetchImagesByBreed(any(), anyInt());
+      verify(catApiClient, never()).fetchImagesByCategory(any(), anyInt());
     }
   }
 
@@ -155,7 +151,6 @@ class DataIngestionServiceImplTest {
 
       dataIngestionService.ingest();
 
-      // breed2 foi salva mesmo com breed1 falhando
       verify(imageRepository).saveAll(anyList());
     }
   }
@@ -167,8 +162,11 @@ class DataIngestionServiceImplTest {
     @Test
     @DisplayName("deve pular categoria HAT quando imagens já existem")
     void shouldSkipHatWhenAlreadyExists() {
-      when(catApiClient.fetchAllBreeds()).thenReturn(Collections.emptyList());
-      when(breedRepository.saveAll(anyList())).thenReturn(Collections.emptyList());
+      Breed breed = buildBreed(1L, "abys", "Abyssinian");
+
+      when(catApiClient.fetchAllBreeds()).thenReturn(List.of(breed));
+      when(breedRepository.saveAll(anyList())).thenReturn(List.of(breed));
+      when(imageRepository.existsByBreedIdAndCategory(1L, ImageCategory.BREED)).thenReturn(true);
       when(imageRepository.existsByCategoryAndBreedIdIsNull(ImageCategory.HAT)).thenReturn(true);
       when(imageRepository.existsByCategoryAndBreedIdIsNull(ImageCategory.GLASSES))
           .thenReturn(false);
@@ -184,8 +182,11 @@ class DataIngestionServiceImplTest {
     @Test
     @DisplayName("deve pular categoria GLASSES quando imagens já existem")
     void shouldSkipGlassesWhenAlreadyExists() {
-      when(catApiClient.fetchAllBreeds()).thenReturn(Collections.emptyList());
-      when(breedRepository.saveAll(anyList())).thenReturn(Collections.emptyList());
+      Breed breed = buildBreed(1L, "abys", "Abyssinian");
+
+      when(catApiClient.fetchAllBreeds()).thenReturn(List.of(breed));
+      when(breedRepository.saveAll(anyList())).thenReturn(List.of(breed));
+      when(imageRepository.existsByBreedIdAndCategory(1L, ImageCategory.BREED)).thenReturn(true);
       when(imageRepository.existsByCategoryAndBreedIdIsNull(ImageCategory.HAT)).thenReturn(false);
       when(catApiClient.fetchImagesByCategory(ImageCategory.HAT, 3))
           .thenReturn(Collections.emptyList());
@@ -201,14 +202,16 @@ class DataIngestionServiceImplTest {
     @Test
     @DisplayName("deve buscar e salvar imagens quando categoria não existe")
     void shouldFetchAndSaveWhenCategoryNotExists() {
+      Breed breed = buildBreed(1L, "abys", "Abyssinian");
       List<Image> hatImages =
           List.of(
               buildImage("hat-1", null, ImageCategory.HAT),
               buildImage("hat-2", null, ImageCategory.HAT),
               buildImage("hat-3", null, ImageCategory.HAT));
 
-      when(catApiClient.fetchAllBreeds()).thenReturn(Collections.emptyList());
-      when(breedRepository.saveAll(anyList())).thenReturn(Collections.emptyList());
+      when(catApiClient.fetchAllBreeds()).thenReturn(List.of(breed));
+      when(breedRepository.saveAll(anyList())).thenReturn(List.of(breed));
+      when(imageRepository.existsByBreedIdAndCategory(1L, ImageCategory.BREED)).thenReturn(true);
       when(imageRepository.existsByCategoryAndBreedIdIsNull(ImageCategory.HAT)).thenReturn(false);
       when(catApiClient.fetchImagesByCategory(ImageCategory.HAT, 3)).thenReturn(hatImages);
       when(imageRepository.existsByCategoryAndBreedIdIsNull(ImageCategory.GLASSES))
