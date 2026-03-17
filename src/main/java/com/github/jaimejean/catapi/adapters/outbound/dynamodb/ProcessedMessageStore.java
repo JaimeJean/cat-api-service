@@ -39,7 +39,7 @@ public class ProcessedMessageStore {
     return response.hasItem() && !response.item().isEmpty();
   }
 
-  public boolean tryMarkAsProcessed(String messageId) {
+  public void tryMarkAsProcessed(String messageId) {
     long ttl = Instant.now().plus(TTL_DAYS, ChronoUnit.DAYS).getEpochSecond();
 
     try {
@@ -54,10 +54,8 @@ public class ProcessedMessageStore {
               .conditionExpression("attribute_not_exists(messageId)")
               .build());
 
-      return true;
     } catch (ConditionalCheckFailedException ex) {
       log.warn("Message already processed (concurrent): messageId={}", messageId);
-      return false;
     }
   }
 }
