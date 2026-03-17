@@ -22,7 +22,7 @@ services:
     container_name: cat-api-localstack
     restart: unless-stopped
     environment:
-      SERVICES: sqs,sns,ses
+      SERVICES: sqs,sns,ses,dynamodb
       AWS_DEFAULT_REGION: us-east-1
       EDGE_PORT: 4566
       DEBUG: 1

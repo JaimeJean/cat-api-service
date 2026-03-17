@@ -1,7 +1,6 @@
 package com.github.jaimejean.catapi.adapters.inbound.sqs;
 
-import com.github.jaimejean.catapi.adapters.outbound.persistence.ProcessedMessageJpaRepository;
-import com.github.jaimejean.catapi.domain.entities.ProcessedMessage;
+import com.github.jaimejean.catapi.adapters.outbound.dynamodb.ProcessedMessageStore;
 import com.github.jaimejean.catapi.domain.model.AsyncBreedRequest;
 import com.github.jaimejean.catapi.domain.ports.in.AsyncRequestService;
 import io.awspring.cloud.sqs.annotation.SqsListener;
@@ -16,21 +15,21 @@ import org.springframework.stereotype.Component;
 public class SqsAsyncRequestConsumer {
 
   private final AsyncRequestService asyncRequestService;
-  private final ProcessedMessageJpaRepository processedMessageRepository;
+  private final ProcessedMessageStore processedMessageStore;
 
   @SqsListener("${catapi.async.sqs-queue-name}")
   public void onMessage(AsyncBreedRequest request, @Header("id") String messageId) {
     log.info(
         "Message received from SQS: messageId={}, requestId={}", messageId, request.getRequestId());
 
-    if (isAlreadyProcessed(messageId)) {
+    if (processedMessageStore.exists(messageId)) {
       log.warn("Duplicate message detected, skipping: messageId={}", messageId);
       return;
     }
 
     try {
       asyncRequestService.process(request);
-      markAsProcessed(messageId);
+      processedMessageStore.tryMarkAsProcessed(messageId);
       log.info(
           "Message processed successfully: messageId={}, requestId={}",
           messageId,
@@ -43,13 +42,5 @@ public class SqsAsyncRequestConsumer {
           ex);
       throw ex;
     }
-  }
-
-  private boolean isAlreadyProcessed(String messageId) {
-    return processedMessageRepository.existsById(messageId);
-  }
-
-  private void markAsProcessed(String messageId) {
-    processedMessageRepository.save(new ProcessedMessage(messageId));
   }
 }

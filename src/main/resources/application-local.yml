@@ -37,6 +37,7 @@ catapi:
     sqs-queue-name: cat-api-async-requests
     sns-topic-name: cat-api-notifications
     ses-sender-email: noreply@catapi.local
+    dynamodb-table-name: processed-messages
 
 resilience4j:
   retry:

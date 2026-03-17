@@ -11,6 +11,15 @@ import org.springframework.context.annotation.Profile;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
+import software.amazon.awssdk.services.dynamodb.model.BillingMode;
+import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement;
+import software.amazon.awssdk.services.dynamodb.model.KeyType;
+import software.amazon.awssdk.services.dynamodb.model.ResourceInUseException;
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
+import software.amazon.awssdk.services.dynamodb.model.TimeToLiveSpecification;
+import software.amazon.awssdk.services.dynamodb.model.UpdateTimeToLiveRequest;
 import software.amazon.awssdk.services.ses.SesClient;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sqs.SqsClient;
@@ -29,7 +38,8 @@ public class LocalStackInitConfig {
       @Value("${spring.cloud.aws.region.static}") String region,
       @Value("${catapi.async.sqs-queue-name}") String queueName,
       @Value("${catapi.async.sns-topic-name}") String topicName,
-      @Value("${catapi.async.ses-sender-email}") String senderEmail) {
+      @Value("${catapi.async.ses-sender-email}") String senderEmail,
+      @Value("${catapi.async.dynamodb-table-name}") String dynamoTableName) {
 
     return args -> {
       log.info("Initializing LocalStack resources...");
@@ -56,6 +66,12 @@ public class LocalStackInitConfig {
                   .endpointOverride(endpointUri)
                   .region(awsRegion)
                   .credentialsProvider(credentials)
+                  .build();
+          var dynamoDbClient =
+              DynamoDbClient.builder()
+                  .endpointOverride(endpointUri)
+                  .region(awsRegion)
+                  .credentialsProvider(credentials)
                   .build()) {
 
         String dlqUrl = ensureQueue(sqsClient, queueName + "-dlq");
@@ -64,6 +80,7 @@ public class LocalStackInitConfig {
         attachDlq(sqsClient, mainQueueUrl, dlqArn);
         createTopic(snsClient, topicName);
         verifyEmail(sesClient, senderEmail);
+        createDynamoTable(dynamoDbClient, dynamoTableName);
       }
 
       log.info("LocalStack resources initialized successfully");
@@ -108,5 +125,35 @@ public class LocalStackInitConfig {
   private void verifyEmail(SesClient sesClient, String email) {
     sesClient.verifyEmailIdentity(r -> r.emailAddress(email));
     log.info("SES email verified: {}", email);
+  }
+
+  private void createDynamoTable(DynamoDbClient dynamoDbClient, String tableName) {
+    try {
+      dynamoDbClient.createTable(
+          r ->
+              r.tableName(tableName)
+                  .keySchema(
+                      KeySchemaElement.builder()
+                          .attributeName("messageId")
+                          .keyType(KeyType.HASH)
+                          .build())
+                  .attributeDefinitions(
+                      AttributeDefinition.builder()
+                          .attributeName("messageId")
+                          .attributeType(ScalarAttributeType.S)
+                          .build())
+                  .billingMode(BillingMode.PAY_PER_REQUEST));
+
+      dynamoDbClient.updateTimeToLive(
+          UpdateTimeToLiveRequest.builder()
+              .tableName(tableName)
+              .timeToLiveSpecification(
+                  TimeToLiveSpecification.builder().attributeName("ttl").enabled(true).build())
+              .build());
+
+      log.info("DynamoDB table created with TTL: {}", tableName);
+    } catch (ResourceInUseException ex) {
+      log.info("DynamoDB table already exists: {}", tableName);
+    }
   }
 }
