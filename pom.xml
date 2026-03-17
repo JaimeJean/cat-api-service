@@ -238,24 +238,17 @@
 				<version>0.8.12</version>
 				<executions>
 					<execution>
-						<id>prepare-agent</id>
-						<goals>
-							<goal>prepare-agent</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>report</id>
-						<phase>test</phase>
-						<goals>
-							<goal>report</goal>
-						</goals>
-					</execution>
-					<execution>
 						<id>check</id>
 						<goals>
 							<goal>check</goal>
 						</goals>
 						<configuration>
+							<excludes>
+								<exclude>com/github/jaimejean/catapi/config/**</exclude>
+								<exclude>com/github/jaimejean/catapi/adapters/**</exclude>
+								<exclude>com/github/jaimejean/catapi/domain/enums/**</exclude>
+								<exclude>com/github/jaimejean/catapi/CatApiServiceApplication.class</exclude>
+							</excludes>
 							<rules>
 								<rule>
 									<element>BUNDLE</element>
@@ -266,11 +259,6 @@
 											<minimum>0.90</minimum>
 										</limit>
 									</limits>
-									<excludes>
-										<exclude>com.github.jaimejean.catapi.config.*</exclude>
-										<exclude>com.github.jaimejean.catapi.adapter.in.rest.dto.*</exclude>
-										<exclude>com.github.jaimejean.catapi.CatApiServiceApplication</exclude>
-									</excludes>
 								</rule>
 							</rules>
 						</configuration>

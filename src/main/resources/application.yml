@@ -18,16 +18,12 @@ server:
   port: 8080
 
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,prometheus
   endpoint:
     health:
-      show-details: always
+      show-details: when-authorized
 
 logging:
   level:
     root: INFO
     com.github.jaimejean.catapi: DEBUG
-    org.hibernate.SQL: DEBUG
+    org.hibernate.SQL: WARN

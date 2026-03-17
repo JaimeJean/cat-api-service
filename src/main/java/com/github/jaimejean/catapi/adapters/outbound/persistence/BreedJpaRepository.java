@@ -13,9 +13,12 @@ public interface BreedJpaRepository extends JpaRepository<Breed, Long> {
 
   Optional<Breed> findByExternalId(String externalId);
 
-  Page<Breed> findByTemperamentContainingIgnoreCase(String temperament, Pageable pageable);
-
-  Page<Breed> findByOriginIgnoreCase(String origin, Pageable pageable);
+  @Query(
+      "SELECT b FROM Breed b WHERE "
+          + "(CAST(:temperament AS string) IS NULL OR LOWER(b.temperament) LIKE LOWER(CONCAT('%', CAST(:temperament AS string), '%'))) AND "
+          + "(CAST(:origin AS string) IS NULL OR LOWER(b.origin) = LOWER(CAST(:origin AS string)))")
+  Page<Breed> search(
+      @Param("temperament") String temperament, @Param("origin") String origin, Pageable pageable);
 
   @Modifying
   @Query(

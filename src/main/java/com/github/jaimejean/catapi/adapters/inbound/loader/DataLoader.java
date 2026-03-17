@@ -1,6 +1,6 @@
 package com.github.jaimejean.catapi.adapters.inbound.loader;
 
-import com.github.jaimejean.catapi.domain.services.DataIngestionService;
+import com.github.jaimejean.catapi.domain.ports.in.DataIngestionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;

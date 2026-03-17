@@ -1,11 +1,10 @@
-package com.github.jaimejean.catapi.domain.services;
+package com.github.jaimejean.catapi.application.services;
 
 import com.github.jaimejean.catapi.config.IngestionPropertiesConfig;
-import com.github.jaimejean.catapi.domain.dtos.BreedApiResponse;
-import com.github.jaimejean.catapi.domain.dtos.ImageApiResponse;
 import com.github.jaimejean.catapi.domain.entities.Breed;
 import com.github.jaimejean.catapi.domain.entities.Image;
 import com.github.jaimejean.catapi.domain.enums.ImageCategory;
+import com.github.jaimejean.catapi.domain.ports.in.DataIngestionService;
 import com.github.jaimejean.catapi.domain.ports.out.BreedRepository;
 import com.github.jaimejean.catapi.domain.ports.out.CatApiClient;
 import com.github.jaimejean.catapi.domain.ports.out.ImageRepository;
@@ -21,13 +20,14 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class DataIngestionService {
+public class DataIngestionServiceImpl implements DataIngestionService {
 
   private final CatApiClient catApiClient;
   private final BreedRepository breedRepository;
   private final ImageRepository imageRepository;
   private final IngestionPropertiesConfig properties;
 
+  @Override
   public void ingest() {
     log.info("Iniciando ingestão de dados da TheCatAPI");
 
@@ -40,12 +40,10 @@ public class DataIngestionService {
   }
 
   private List<Breed> ingestBreeds() {
-    List<BreedApiResponse> breedsFromApi = catApiClient.fetchAllBreeds();
+    List<Breed> breedsFromApi = catApiClient.fetchAllBreeds();
     log.info("Raças encontradas na API: {}", breedsFromApi.size());
 
-    List<Breed> breeds = breedsFromApi.stream().map(this::toBreedEntity).toList();
-
-    return breedRepository.saveAll(breeds);
+    return breedRepository.saveAll(breedsFromApi);
   }
 
   private void ingestBreedImages(List<Breed> breeds) {
@@ -53,11 +51,14 @@ public class DataIngestionService {
 
     try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
 
+      // Submete uma virtual thread por raça — todas são criadas de uma vez,
+      // mas o semaphore controla quantas acessam a API ao mesmo tempo
       List<? extends Future<?>> futures =
           breeds.stream()
               .map(breed -> executor.submit(() -> this.fetchAndSaveWithThrottle(breed, semaphore)))
               .toList();
 
+      // Aguarda todas terminarem; se alguma falhar, loga e segue com as demais
       for (Future<?> future : futures) {
         try {
           future.get();
@@ -66,6 +67,7 @@ public class DataIngestionService {
         }
       }
     }
+    // try-with-resources garante shutdown do executor ao sair do bloco
 
     log.info("Ingestão de imagens de raças finalizada");
   }
@@ -91,14 +93,7 @@ public class DataIngestionService {
       return;
     }
 
-    List<ImageApiResponse> imagesFromApi =
-        catApiClient.fetchImagesByBreed(breed.getExternalId(), properties.getImagesPerBreed());
-
-    List<Image> images =
-        imagesFromApi.stream()
-            .map(response -> this.toImageEntity(response, breed, ImageCategory.BREED))
-            .toList();
-
+    List<Image> images = catApiClient.fetchImagesByBreed(breed, properties.getImagesPerBreed());
     imageRepository.saveAll(images);
   }
 
@@ -108,30 +103,10 @@ public class DataIngestionService {
       return;
     }
 
-    List<ImageApiResponse> imagesFromApi =
-        catApiClient.fetchImagesByCategory(
-            category.getCatApiCategoryId(), properties.getCategoryImagesLimit());
-
-    log.info("Imagens de {} encontradas: {}", category, imagesFromApi.size());
-
     List<Image> images =
-        imagesFromApi.stream()
-            .map(response -> this.toImageEntity(response, null, category))
-            .toList();
+        catApiClient.fetchImagesByCategory(category, properties.getCategoryImagesLimit());
+    log.info("Imagens de {} encontradas: {}", category, images.size());
 
     imageRepository.saveAll(images);
-  }
-
-  private Breed toBreedEntity(BreedApiResponse response) {
-    return new Breed(
-        response.id(),
-        response.name(),
-        response.origin(),
-        response.temperament(),
-        response.description());
-  }
-
-  private Image toImageEntity(ImageApiResponse response, Breed breed, ImageCategory category) {
-    return new Image(response.id(), response.url(), breed, category);
   }
 }

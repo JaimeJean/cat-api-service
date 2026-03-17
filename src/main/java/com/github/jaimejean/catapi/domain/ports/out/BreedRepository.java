@@ -12,13 +12,7 @@ public interface BreedRepository {
 
   List<Breed> saveAll(List<Breed> breeds);
 
-  Optional<Breed> findByExternalId(String externalId);
-
   Optional<Breed> findById(Long id);
 
-  Page<Breed> findAll(Pageable pageable);
-
-  Page<Breed> findByTemperamentContainingIgnoreCase(String temperament, Pageable pageable);
-
-  Page<Breed> findByOriginIgnoreCase(String origin, Pageable pageable);
+  Page<Breed> search(String temperament, String origin, Pageable pageable);
 }
