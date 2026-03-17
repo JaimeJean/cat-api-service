@@ -46,4 +46,19 @@ public class BreedRepositoryAdapter implements BreedRepository {
   public Page<Breed> search(String temperament, String origin, Pageable pageable) {
     return jpa.search(temperament, origin, pageable);
   }
+
+  @Override
+  public List<Breed> findAll() {
+    return jpa.findAll();
+  }
+
+  @Override
+  public List<Breed> findByTemperamentContainingIgnoreCase(String temperament) {
+    return jpa.search(temperament, null, Pageable.unpaged()).getContent();
+  }
+
+  @Override
+  public List<Breed> findByOriginIgnoreCase(String origin) {
+    return jpa.search(null, origin, Pageable.unpaged()).getContent();
+  }
 }
