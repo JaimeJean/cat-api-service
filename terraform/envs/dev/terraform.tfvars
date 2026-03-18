@@ -14,3 +14,4 @@ db_name                        = "catapidb"
 db_username                    = "postgres"
 db_instance_class              = "db.t3.micro"
 db_allocated_storage           = 20
+thecatapi_secret_name_suffix   = "thecatapi-key"

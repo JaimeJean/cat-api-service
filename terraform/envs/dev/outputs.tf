@@ -81,3 +81,27 @@ output "rds_db_name" {
 output "rds_master_user_secret_arn" {
   value = module.rds.master_user_secret_arn
 }
+
+output "thecatapi_secret_name" {
+  value = module.thecatapi_secret.secret_name
+}
+
+output "thecatapi_secret_arn" {
+  value = module.thecatapi_secret.secret_arn
+}
+
+output "ecs_task_execution_role_arn" {
+  value = module.iam.task_execution_role_arn
+}
+
+output "ecs_task_execution_role_name" {
+  value = module.iam.task_execution_role_name
+}
+
+output "ecs_task_role_arn" {
+  value = module.iam.task_role_arn
+}
+
+output "ecs_task_role_name" {
+  value = module.iam.task_role_name
+}

@@ -77,3 +77,8 @@ variable "db_allocated_storage" {
   type        = number
   description = "RDS allocated storage in GB"
 }
+
+variable "thecatapi_secret_name_suffix" {
+  type        = string
+  description = "Suffix for TheCatAPI secret name"
+}

@@ -67,3 +67,32 @@ module "rds" {
 
   tags = local.common_tags
 }
+
+module "thecatapi_secret" {
+  source = "../../modules/secrets"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  secret_name_suffix = var.thecatapi_secret_name_suffix
+  description        = "API key for TheCatAPI"
+  tags               = local.common_tags
+}
+
+module "iam" {
+  source = "../../modules/iam"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  secrets_arns = [
+    module.thecatapi_secret.secret_arn,
+    module.rds.master_user_secret_arn
+  ]
+
+  sqs_queue_arn    = module.sqs.queue_arn
+  sqs_dlq_arn      = module.sqs.dlq_arn
+  dynamodb_table_arn = module.dynamodb.table_arn
+
+  tags = local.common_tags
+}
