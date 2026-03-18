@@ -59,3 +59,11 @@ build/
 
 ### ENV ###
 .env
+
+
+### TERRAFORM ###
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+.terraform.tfstate.lock.info
