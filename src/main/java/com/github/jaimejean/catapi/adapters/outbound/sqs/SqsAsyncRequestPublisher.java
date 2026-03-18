@@ -1,29 +1,24 @@
 package com.github.jaimejean.catapi.adapters.outbound.sqs;
 
+import com.github.jaimejean.catapi.config.AsyncPropertiesConfig;
 import com.github.jaimejean.catapi.domain.model.AsyncBreedRequest;
 import com.github.jaimejean.catapi.domain.ports.out.AsyncRequestPublisher;
 import io.awspring.cloud.sqs.operations.SqsTemplate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class SqsAsyncRequestPublisher implements AsyncRequestPublisher {
 
-  private static final Logger log = LoggerFactory.getLogger(SqsAsyncRequestPublisher.class);
-
   private final SqsTemplate sqsTemplate;
-  private final String queueName;
-
-  public SqsAsyncRequestPublisher(
-      SqsTemplate sqsTemplate, @Value("${catapi.async.sqs-queue-name}") String queueName) {
-    this.sqsTemplate = sqsTemplate;
-    this.queueName = queueName;
-  }
+  private final AsyncPropertiesConfig asyncProperties;
 
   @Override
   public void publish(AsyncBreedRequest request) {
+    String queueName = asyncProperties.getSqsQueueName();
     log.debug(
         "Publishing message to SQS: queue={}, requestId={}", queueName, request.getRequestId());
 

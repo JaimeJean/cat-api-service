@@ -1,5 +1,6 @@
 package com.github.jaimejean.catapi.adapters.outbound.ses;
 
+import com.github.jaimejean.catapi.config.AsyncPropertiesConfig;
 import com.github.jaimejean.catapi.domain.entities.Breed;
 import com.github.jaimejean.catapi.domain.model.AsyncBreedRequest;
 import com.github.jaimejean.catapi.domain.ports.out.NotificationPublisher;
@@ -7,8 +8,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.ses.SesClient;
 import software.amazon.awssdk.services.ses.model.Body;
@@ -18,17 +19,12 @@ import software.amazon.awssdk.services.ses.model.Message;
 import software.amazon.awssdk.services.ses.model.SendEmailRequest;
 
 @Component
+@RequiredArgsConstructor
 @Slf4j
 public class SesNotificationPublisher implements NotificationPublisher {
 
   private final SesClient sesClient;
-  private final String senderEmail;
-
-  public SesNotificationPublisher(
-      SesClient sesClient, @Value("${catapi.async.ses-sender-email}") String senderEmail) {
-    this.sesClient = sesClient;
-    this.senderEmail = senderEmail;
-  }
+  private final AsyncPropertiesConfig asyncProperties;
 
   @Override
   public void notify(AsyncBreedRequest request, List<Breed> breeds) {
@@ -40,7 +36,7 @@ public class SesNotificationPublisher implements NotificationPublisher {
     try {
       SendEmailRequest emailRequest =
           SendEmailRequest.builder()
-              .source(senderEmail)
+              .source(asyncProperties.getSesSenderEmail())
               .destination(Destination.builder().toAddresses(request.getEmail()).build())
               .message(
                   Message.builder()

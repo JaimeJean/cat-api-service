@@ -36,6 +36,7 @@ catapi:
     sns-topic-name: cat-api-notifications
     ses-sender-email: noreply@catapi.local
     dynamodb-table-name: processed-messages
+    ttl-days: 7
 
 resilience4j:
   retry:

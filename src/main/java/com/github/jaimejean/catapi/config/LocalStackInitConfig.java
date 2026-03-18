@@ -34,12 +34,9 @@ public class LocalStackInitConfig {
 
   @Bean
   CommandLineRunner initLocalStackResources(
+      AsyncPropertiesConfig asyncProperties,
       @Value("${spring.cloud.aws.endpoint}") String endpoint,
-      @Value("${spring.cloud.aws.region.static}") String region,
-      @Value("${catapi.async.sqs-queue-name}") String queueName,
-      @Value("${catapi.async.sns-topic-name}") String topicName,
-      @Value("${catapi.async.ses-sender-email}") String senderEmail,
-      @Value("${catapi.async.dynamodb-table-name}") String dynamoTableName) {
+      @Value("${spring.cloud.aws.region.static}") String region) {
 
     return args -> {
       log.info("Initializing LocalStack resources...");
@@ -74,13 +71,13 @@ public class LocalStackInitConfig {
                   .credentialsProvider(credentials)
                   .build()) {
 
-        String dlqUrl = ensureQueue(sqsClient, queueName + "-dlq");
+        String dlqUrl = ensureQueue(sqsClient, asyncProperties.getSqsQueueName() + "-dlq");
         String dlqArn = getQueueArn(sqsClient, dlqUrl);
-        String mainQueueUrl = ensureQueue(sqsClient, queueName);
+        String mainQueueUrl = ensureQueue(sqsClient, asyncProperties.getSqsQueueName());
         attachDlq(sqsClient, mainQueueUrl, dlqArn);
-        createTopic(snsClient, topicName);
-        verifyEmail(sesClient, senderEmail);
-        createDynamoTable(dynamoDbClient, dynamoTableName);
+        createTopic(snsClient, asyncProperties.getSnsTopicName());
+        verifyEmail(sesClient, asyncProperties.getSesSenderEmail());
+        createDynamoTable(dynamoDbClient, asyncProperties.getDynamodbTableName());
       }
 
       log.info("LocalStack resources initialized successfully");
