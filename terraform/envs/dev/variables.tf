@@ -17,3 +17,13 @@ variable "vpc_cidr" {
   type        = string
   description = "CIDR block for VPC"
 }
+
+variable "app_port" {
+  type        = number
+  description = "Application port"
+}
+
+variable "db_port" {
+  type        = number
+  description = "Database port"
+}
