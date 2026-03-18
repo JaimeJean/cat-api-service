@@ -82,3 +82,33 @@ variable "thecatapi_secret_name_suffix" {
   type        = string
   description = "Suffix for TheCatAPI secret name"
 }
+
+variable "log_retention_in_days" {
+  type        = number
+  description = "CloudWatch log retention"
+}
+
+variable "health_check_path" {
+  type        = string
+  description = "Health check path for ALB target group"
+}
+
+variable "ecs_container_name" {
+  type        = string
+  description = "ECS container name"
+}
+
+variable "ecs_cpu" {
+  type        = number
+  description = "Fargate CPU units"
+}
+
+variable "ecs_memory" {
+  type        = number
+  description = "Fargate memory in MiB"
+}
+
+variable "ecs_desired_count" {
+  type        = number
+  description = "Desired ECS service count"
+}

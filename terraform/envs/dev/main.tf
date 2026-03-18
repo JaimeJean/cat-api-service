@@ -96,3 +96,61 @@ module "iam" {
 
   tags = local.common_tags
 }
+
+module "observability" {
+  source = "../../modules/observability"
+
+  project_name          = var.project_name
+  environment           = var.environment
+  log_retention_in_days = var.log_retention_in_days
+  tags                  = local.common_tags
+}
+
+module "alb" {
+  source = "../../modules/alb"
+
+  project_name          = var.project_name
+  environment           = var.environment
+  vpc_id                = module.network.vpc_id
+  public_subnet_ids     = module.network.public_subnet_ids
+  alb_security_group_id = module.security.alb_security_group_id
+  app_port              = var.app_port
+  health_check_path     = var.health_check_path
+  tags                  = local.common_tags
+}
+
+module "ecs" {
+  source = "../../modules/ecs"
+
+  project_name = var.project_name
+  environment  = var.environment
+  aws_region   = var.aws_region
+
+  app_image      = "${module.ecr.repository_url}:latest"
+  container_name = var.ecs_container_name
+  app_port       = var.app_port
+  cpu            = var.ecs_cpu
+  memory         = var.ecs_memory
+  desired_count  = var.ecs_desired_count
+
+  public_subnet_ids     = module.network.public_subnet_ids
+  ecs_security_group_id = module.security.ecs_security_group_id
+  target_group_arn      = module.alb.target_group_arn
+
+  execution_role_arn = module.iam.task_execution_role_arn
+  task_role_arn      = module.iam.task_role_arn
+  log_group_name     = module.observability.ecs_log_group_name
+
+  db_host     = module.rds.db_instance_address
+  db_port     = module.rds.db_instance_port
+  db_name     = module.rds.db_name
+  db_username = var.db_username
+
+  sqs_queue_url       = module.sqs.queue_url
+  dynamodb_table_name = module.dynamodb.table_name
+
+  rds_secret_arn      = module.rds.master_user_secret_arn
+  thecatapi_secret_arn = module.thecatapi_secret.secret_arn
+
+  tags = local.common_tags
+}
