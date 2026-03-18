@@ -53,3 +53,7 @@ output "sqs_dlq_url" {
 output "sqs_dlq_arn" {
   value = module.sqs.dlq_arn
 }
+
+output "private_db_subnet_ids" {
+  value = module.network.private_db_subnet_ids
+}
