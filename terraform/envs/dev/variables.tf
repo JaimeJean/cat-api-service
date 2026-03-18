@@ -112,3 +112,8 @@ variable "ecs_desired_count" {
   type        = number
   description = "Desired ECS service count"
 }
+
+variable "ses_sender_email" {
+  type        = string
+  description = "Verified sender email for Amazon SES"
+}

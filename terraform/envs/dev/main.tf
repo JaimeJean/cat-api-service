@@ -154,3 +154,9 @@ module "ecs" {
 
   tags = local.common_tags
 }
+
+module "ses" {
+  source = "../../modules/ses"
+
+  sender_email = var.ses_sender_email
+}

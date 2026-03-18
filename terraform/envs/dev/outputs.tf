@@ -125,3 +125,11 @@ output "ecs_cluster_name" {
 output "ecs_service_name" {
   value = module.ecs.service_name
 }
+
+output "ses_sender_email" {
+  value = module.ses.sender_email
+}
+
+output "ses_sender_email_identity_arn" {
+  value = module.ses.sender_email_identity_arn
+}
