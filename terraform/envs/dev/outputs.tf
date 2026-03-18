@@ -57,3 +57,27 @@ output "sqs_dlq_arn" {
 output "private_db_subnet_ids" {
   value = module.network.private_db_subnet_ids
 }
+
+output "rds_identifier" {
+  value = module.rds.db_instance_identifier
+}
+
+output "rds_endpoint" {
+  value = module.rds.db_instance_endpoint
+}
+
+output "rds_address" {
+  value = module.rds.db_instance_address
+}
+
+output "rds_port" {
+  value = module.rds.db_instance_port
+}
+
+output "rds_db_name" {
+  value = module.rds.db_name
+}
+
+output "rds_master_user_secret_arn" {
+  value = module.rds.master_user_secret_arn
+}

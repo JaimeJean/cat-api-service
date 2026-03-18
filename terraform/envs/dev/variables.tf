@@ -57,3 +57,23 @@ variable "sqs_visibility_timeout_seconds" {
   type        = number
   description = "Visibility timeout for the main queue"
 }
+
+variable "db_name" {
+  type        = string
+  description = "Database name"
+}
+
+variable "db_username" {
+  type        = string
+  description = "Database username"
+}
+
+variable "db_instance_class" {
+  type        = string
+  description = "RDS instance class"
+}
+
+variable "db_allocated_storage" {
+  type        = number
+  description = "RDS allocated storage in GB"
+}

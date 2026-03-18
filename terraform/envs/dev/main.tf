@@ -46,3 +46,24 @@ module "sqs" {
   visibility_timeout_seconds = var.sqs_visibility_timeout_seconds
   tags                       = local.common_tags
 }
+
+module "rds" {
+  source = "../../modules/rds"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  db_name           = var.db_name
+  db_username       = var.db_username
+  db_port           = var.db_port
+  instance_class    = var.db_instance_class
+  allocated_storage = var.db_allocated_storage
+
+  subnet_ids             = module.network.private_db_subnet_ids
+  vpc_security_group_ids = [module.security.rds_security_group_id]
+
+  publicly_accessible = false
+  skip_final_snapshot = true
+
+  tags = local.common_tags
+}

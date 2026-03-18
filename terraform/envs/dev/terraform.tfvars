@@ -10,3 +10,7 @@ dynamodb_ttl_attribute_name    = "ttl"
 sqs_queue_name_suffix          = "async-requests"
 sqs_max_receive_count          = 3
 sqs_visibility_timeout_seconds = 60
+db_name                        = "catapidb"
+db_username                    = "postgres"
+db_instance_class              = "db.t3.micro"
+db_allocated_storage           = 20
