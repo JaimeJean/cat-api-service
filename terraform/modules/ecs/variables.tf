@@ -74,11 +74,15 @@ variable "db_username" {
   type = string
 }
 
-variable "sqs_queue_url" {
+variable "sqs_queue_name" {
   type = string
 }
 
 variable "dynamodb_table_name" {
+  type = string
+}
+
+variable "ses_sender_email" {
   type = string
 }
 

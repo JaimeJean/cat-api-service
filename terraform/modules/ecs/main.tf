@@ -33,19 +33,32 @@ resource "aws_ecs_task_definition" "this" {
         }
       ]
 
+      healthCheck = {
+        command = [
+          "CMD-SHELL",
+          "curl -f http://localhost:${var.app_port}/actuator/health || exit 1"
+        ]
+        interval    = 30
+        timeout     = 5
+        retries     = 3
+        startPeriod = 60
+      }
+
       environment = [
-        { name = "SPRING_PROFILES_ACTIVE", value = "aws" },
+        { name = "SPRING_PROFILES_ACTIVE", value = "prod" },
         { name = "DB_HOST", value = var.db_host },
         { name = "DB_PORT", value = tostring(var.db_port) },
         { name = "DB_NAME", value = var.db_name },
         { name = "DB_USERNAME", value = var.db_username },
-        { name = "SQS_QUEUE_URL", value = var.sqs_queue_url },
-        { name = "DYNAMODB_TABLE_NAME", value = var.dynamodb_table_name }
+        { name = "AWS_REGION", value = var.aws_region },
+        { name = "SQS_QUEUE_NAME", value = var.sqs_queue_name },
+        { name = "DYNAMODB_TABLE_NAME", value = var.dynamodb_table_name },
+        { name = "SES_SENDER_EMAIL", value = var.ses_sender_email }
       ]
 
       secrets = [
-        { name = "DB_PASSWORD", valueFrom = var.rds_secret_arn },
-        { name = "THE_CAT_API_KEY", valueFrom = var.thecatapi_secret_arn }
+        { name = "DB_PASSWORD", valueFrom = "${var.rds_secret_arn}:password::" },
+        { name = "CAT_API_KEY", valueFrom = var.thecatapi_secret_arn }
       ]
 
       logConfiguration = {

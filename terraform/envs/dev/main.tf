@@ -90,20 +90,11 @@ module "iam" {
     module.rds.master_user_secret_arn
   ]
 
-  sqs_queue_arn    = module.sqs.queue_arn
-  sqs_dlq_arn      = module.sqs.dlq_arn
+  sqs_queue_arn      = module.sqs.queue_arn
+  sqs_dlq_arn        = module.sqs.dlq_arn
   dynamodb_table_arn = module.dynamodb.table_arn
 
   tags = local.common_tags
-}
-
-module "observability" {
-  source = "../../modules/observability"
-
-  project_name          = var.project_name
-  environment           = var.environment
-  log_retention_in_days = var.log_retention_in_days
-  tags                  = local.common_tags
 }
 
 module "alb" {
@@ -117,6 +108,27 @@ module "alb" {
   app_port              = var.app_port
   health_check_path     = var.health_check_path
   tags                  = local.common_tags
+}
+
+module "observability" {
+  source = "../../modules/observability"
+
+  project_name          = var.project_name
+  environment           = var.environment
+  log_retention_in_days = var.log_retention_in_days
+
+  alb_arn_suffix          = module.alb.alb_arn_suffix
+  target_group_arn_suffix = module.alb.target_group_arn_suffix
+  sqs_queue_name          = module.sqs.queue_name
+  sqs_dlq_name            = module.sqs.dlq_name
+
+  tags = local.common_tags
+}
+
+module "ses" {
+  source = "../../modules/ses"
+
+  sender_email = var.ses_sender_email
 }
 
 module "ecs" {
@@ -146,17 +158,13 @@ module "ecs" {
   db_name     = module.rds.db_name
   db_username = var.db_username
 
-  sqs_queue_url       = module.sqs.queue_url
-  dynamodb_table_name = module.dynamodb.table_name
-
-  rds_secret_arn      = module.rds.master_user_secret_arn
+  rds_secret_arn       = module.rds.master_user_secret_arn
   thecatapi_secret_arn = module.thecatapi_secret.secret_arn
+
+  sqs_queue_name      = module.sqs.queue_name
+  dynamodb_table_name = module.dynamodb.table_name
+  ses_sender_email    = module.ses.sender_email
 
   tags = local.common_tags
 }
 
-module "ses" {
-  source = "../../modules/ses"
-
-  sender_email = var.ses_sender_email
-}
