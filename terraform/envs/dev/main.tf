@@ -25,3 +25,13 @@ module "ecr" {
   environment  = var.environment
   tags         = local.common_tags
 }
+
+module "dynamodb" {
+  source = "../../modules/dynamodb"
+
+  project_name      = var.project_name
+  environment       = var.environment
+  table_name_suffix = var.dynamodb_table_name_suffix
+  hash_key          = var.dynamodb_hash_key
+  tags              = local.common_tags
+}

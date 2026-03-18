@@ -27,3 +27,18 @@ variable "db_port" {
   type        = number
   description = "Database port"
 }
+
+variable "dynamodb_table_name_suffix" {
+  type        = string
+  description = "Suffix for application DynamoDB table name"
+}
+
+variable "dynamodb_hash_key" {
+  type        = string
+  description = "Hash key for application DynamoDB table"
+}
+
+variable "dynamodb_ttl_attribute_name" {
+  type        = string
+  description = "TTL attribute name for application DynamoDB table"
+}
