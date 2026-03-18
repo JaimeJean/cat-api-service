@@ -42,3 +42,18 @@ variable "dynamodb_ttl_attribute_name" {
   type        = string
   description = "TTL attribute name for application DynamoDB table"
 }
+
+variable "sqs_queue_name_suffix" {
+  type        = string
+  description = "Suffix for the main SQS queue name"
+}
+
+variable "sqs_max_receive_count" {
+  type        = number
+  description = "Max receives before message goes to DLQ"
+}
+
+variable "sqs_visibility_timeout_seconds" {
+  type        = number
+  description = "Visibility timeout for the main queue"
+}

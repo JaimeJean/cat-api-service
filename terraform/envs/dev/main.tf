@@ -35,3 +35,14 @@ module "dynamodb" {
   hash_key          = var.dynamodb_hash_key
   tags              = local.common_tags
 }
+
+module "sqs" {
+  source = "../../modules/sqs"
+
+  project_name               = var.project_name
+  environment                = var.environment
+  queue_name_suffix          = var.sqs_queue_name_suffix
+  max_receive_count          = var.sqs_max_receive_count
+  visibility_timeout_seconds = var.sqs_visibility_timeout_seconds
+  tags                       = local.common_tags
+}
