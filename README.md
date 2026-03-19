@@ -321,8 +321,7 @@ Como evoluções futuras, seria possível adicionar:
 - pipeline CI/CD para build, push e deploy automatizados;
 - dashboards mais completos no CloudWatch;
 - rastreamento avançado de entrega de e-mails via SES;
-- endurecimento adicional de permissões IAM;
-- melhoria da estratégia de startup para reduzir tempo da ingestão inicial.
+- Autenticação nos acessos dos enpoints (não foi implementado para não aumentar complexidade para um case).
 
 ---
 

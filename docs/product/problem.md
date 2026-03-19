@@ -50,7 +50,7 @@ Em resumo, a aplicação funciona como uma camada intermediária que coleta, arm
 
 ### Possíveis evoluções futuras
 
-- **Autenticação/autorização nos endpoints:** implementaria um filtro com API Key para acesso geral e, em um cenário mais robusto, JWT com roles para diferenciar perfis (admin para disparar a carga, leitura para consultas). O Spring Security já suporta isso nativamente.
+- **Autenticação/autorização nos endpoints:** implementaria um filtro com API Key para acesso geral e, em um cenário mais robusto, JWT com roles para diferenciar perfis (admin para disparar a carga, leitura para consultas). O Spring Security já suporta isso nativamente. Não foi implementado para não aumentar complexidade e não se encaixava no case.
 - **Carga incremental com agendamento periódico:** utilizaria `@Scheduled` do Spring para executar a ingestão em intervalos configuráveis. A lógica de upsert no banco evitaria duplicações, e um campo de controle (`last_updated`) permitiria processar apenas dados novos ou alterados.
 - **Cache nas APIs de consulta:** adicionaria Redis como cache nos endpoints de listagem com TTL configurável (ex: 30 minutos). Como os dados mudam pouco depois da carga, o ganho de performance seria alto com baixa complexidade. A invalidação aconteceria no momento de uma nova carga de dados.
 
