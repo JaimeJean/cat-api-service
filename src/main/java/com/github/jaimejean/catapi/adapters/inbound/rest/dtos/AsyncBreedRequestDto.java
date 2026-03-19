@@ -1,0 +1,11 @@
+package com.github.jaimejean.catapi.adapters.inbound.rest.dtos;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
+@Schema(description = "Request for async breed query — result will be sent by email")
+public record AsyncBreedRequestDto(
+    @NotBlank(message = "email is required") @Email(message = "email must be valid") String email,
+    String temperament,
+    String origin) {}

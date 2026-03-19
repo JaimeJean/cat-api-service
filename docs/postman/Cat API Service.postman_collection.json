@@ -1,0 +1,377 @@
+{
+  "info": {
+    "_postman_id": "4ceab8cc-633d-4462-b614-69972b82c1a2",
+    "name": "Cat API Service",
+    "description": "Collection for the Cat API Service - Technical case for Itaú Unibanco.\n\nBase URL: http://localhost:8080\n\nAll endpoints are versioned under /api/v1/ and return errors in RFC 7807 (Problem Details) format.\n\nPagination parameters (where applicable):\n- page: page number (0-indexed, default: 0)\n- size: page size (default: 20)\n- sort: field,direction (default: name,asc)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "14954527"
+  },
+  "item": [
+    {
+      "name": "Breeds",
+      "item": [
+        {
+          "name": "List all breeds",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/breeds",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "breeds"
+              ],
+              "query": [
+                {
+                  "key": "temperament",
+                  "value": "Intelligent",
+                  "description": "Filtrar pela palavra de temperamento",
+                  "disabled": true
+                },
+                {
+                  "key": "origin",
+                  "value": "United States",
+                  "description": "Filtrar pelo pais de origem",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "size",
+                  "value": "5",
+                  "disabled": true
+                },
+                {
+                  "key": "sort",
+                  "value": "name,asc",
+                  "description": "Ordenar pelo nome ordem crescente/decrescente",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Get breed by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/breeds/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "breeds",
+                "1"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Get breed by ID (teste - 404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/breeds/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "breeds",
+                "99999"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Get breed by ID (teste - 400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/breeds/abc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "breeds",
+                "abc"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ],
+      "description": "Endpoints for querying cat breeds"
+    },
+    {
+      "name": "Images",
+      "item": [
+        {
+          "name": "Images with hats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/images?category=HAT",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "images"
+              ],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "HAT",
+                  "description": "Imagens de gatos de chapéu"
+                },
+                {
+                  "key": "category",
+                  "value": "GLASSES",
+                  "description": "Imagens de gatos de chapéu",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid category (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/images?category=INVALID",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "images"
+              ],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "INVALID"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ],
+      "description": "Endpoints para categoria (HAT, GLASSES)"
+    },
+    {
+      "name": "Error Scenarios",
+      "item": [
+        {
+          "name": "Endpoint not found (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/breds",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "breds"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ],
+      "description": ""
+    },
+    {
+      "name": "Health & Monitoring",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ],
+      "description": "Actuator endpoints for operational monitoring"
+    },
+    {
+      "name": "Swagger",
+      "item": [
+        {
+          "name": "OpenAPI spec (JSON)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v3/api-docs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v3",
+                "api-docs"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Swagger UI (open in browser)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/swagger-ui/index.html",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "swagger-ui",
+                "index.html"
+              ]
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ],
+      "description": "API documentation endpoints"
+    },
+    {
+      "name": "Async",
+      "item": [
+        {
+          "name": "List All Breeds",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"test@example.com\"}&{\"email\": \"test@example.com\", \"temperament\": \"playful\"}&{\"email\": \"test@example.com\", \"temperament\": \"playful\", \"origin\": \"Egypt\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/async/breeds",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "v1",
+                "async",
+                "breeds"
+              ]
+            },
+            "description": "Generated from cURL: curl -X POST http://localhost:8080/api/v1/async/breeds \\\n  -H \"Content-Type: application/json\" \\\n  -d \"{\\\"email\\\": \\\"test@example.com\\\"}\"\n\ncurl -X POST http://localhost:8080/api/v1/async/breeds \\\n  -H \"Content-Type: application/json\" \\\n  -d \"{\\\"email\\\": \\\"test@example.com\\\", \\\"temperament\\\": \\\"playful\\\"}\"\n\ncurl -X POST http://localhost:8080/api/v1/async/breeds \\\n  -H \"Content-Type: application/json\" \\\n  -d \"{\\\"email\\\": \\\"test@example.com\\\", \\\"temperament\\\": \\\"playful\\\", \\\"origin\\\": \\\"Egypt\\\"}\""
+          },
+          "response": []
+        },
+        {
+          "name": "List Breeds By",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"test@example.com\"}&{\"email\": \"test@example.com\", \"temperament\": \"playful\"}&{\"email\": \"test@example.com\", \"temperament\": \"playful\", \"origin\": \"Egypt\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/async/breeds",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "v1",
+                "async",
+                "breeds"
+              ]
+            },
+            "description": "Generated from cURL: curl -X POST http://localhost:8080/api/v1/async/breeds \\\n  -H \"Content-Type: application/json\" \\\n  -d \"{\\\"email\\\": \\\"test@example.com\\\"}\"\n\ncurl -X POST http://localhost:8080/api/v1/async/breeds \\\n  -H \"Content-Type: application/json\" \\\n  -d \"{\\\"email\\\": \\\"test@example.com\\\", \\\"temperament\\\": \\\"playful\\\"}\"\n\ncurl -X POST http://localhost:8080/api/v1/async/breeds \\\n  -H \"Content-Type: application/json\" \\\n  -d \"{\\\"email\\\": \\\"test@example.com\\\", \\\"temperament\\\": \\\"playful\\\", \\\"origin\\\": \\\"Egypt\\\"}\""
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ]
+}

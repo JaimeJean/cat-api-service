@@ -1,36 +1,46 @@
 spring:
-  application:
-    name: cat-api-service
-
-  profiles:
-    active: local
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
 
   jpa:
-    open-in-view: false
-    hibernate:
-      ddl-auto: validate
-    properties:
-      hibernate:
-        format_sql: true
+    show-sql: false
 
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
+logging:
+  level:
+    root: INFO
+    com.github.jaimejean.catapi: INFO
+    org.hibernate.SQL: WARN
 
-server:
-  port: 8080
+catapi:
+  api:
+    base-url: https://api.thecatapi.com/v1
+    key: ${CAT_API_KEY}
+    connect-timeout: 5000
+    read-timeout: 10000
+  ingestion:
+    images-per-breed: 3
+    category-images-limit: 3
+    max-concurrent-requests: 5
+  async:
+    sqs-queue-name: ${SQS_QUEUE_NAME}
+    ses-sender-email: ${SES_SENDER_EMAIL}
+    dynamodb-table-name: ${DYNAMODB_TABLE_NAME}
+    ttl-days: 7
+
+cloud:
+  aws:
+    region:
+      static: ${AWS_REGION:us-east-1}
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: health, info, metrics
   endpoint:
     health:
       show-details: always
 
-logging:
-  level:
-    root: INFO
-    com.github.jaimejean.catapi: DEBUG
-    org.hibernate.SQL: DEBUG

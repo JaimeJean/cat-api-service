@@ -15,10 +15,31 @@ logging:
     org.hibernate.SQL: WARN
 
 catapi:
-  base-url: https://api.thecatapi.com/v1
-  api-key: ${CAT_API_KEY}
+  api:
+    base-url: https://api.thecatapi.com/v1
+    key: ${CAT_API_KEY}
+    connect-timeout: 5000
+    read-timeout: 10000
+  ingestion:
+    images-per-breed: 3
+    category-images-limit: 3
+    max-concurrent-requests: 5
+  async:
+    sqs-queue-name: ${SQS_QUEUE_NAME}
+    ses-sender-email: ${SES_SENDER_EMAIL}
+    dynamodb-table-name: ${DYNAMODB_TABLE_NAME}
+    ttl-days: 7
 
 cloud:
   aws:
     region:
       static: ${AWS_REGION:us-east-1}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: always

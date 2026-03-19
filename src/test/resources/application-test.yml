@@ -7,3 +7,20 @@ spring:
 
   flyway:
     enabled: false
+
+  cloud:
+    aws:
+      sns:
+        enabled: false
+      ses:
+        enabled: false
+      region:
+        static: us-east-1
+      credentials:
+        access-key: test
+        secret-key: test
+
+logging:
+  level:
+    org.springframework: WARN
+    org.hibernate: WARN
