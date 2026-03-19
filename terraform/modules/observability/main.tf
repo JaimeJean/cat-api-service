@@ -74,3 +74,15 @@ resource "aws_cloudwatch_metric_alarm" "sqs_dlq_has_messages" {
     Name = "${local.name_prefix}-sqs-dlq-has-messages"
   })
 }
+
+resource "aws_cloudwatch_log_metric_filter" "ingestion_startup_failure" {
+  name           = "${local.name_prefix}-ingestion-startup-failure"
+  log_group_name = aws_cloudwatch_log_group.ecs.name
+  pattern        = "\"TheCatAPI retornou lista vazia de raças\""
+
+  metric_transformation {
+    name      = "IngestionStartupFailure"
+    namespace = "CatApi/Application"
+    value     = "1"
+  }
+}

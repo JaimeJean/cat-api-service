@@ -23,6 +23,13 @@ public class AsyncRequestServiceImpl implements AsyncRequestService {
 
   @Override
   public String submit(AsyncBreedRequest request) {
+    log.info(
+        "Async submit: requestId={}, temperament='{}' (len={}), origin='{}' (len={})",
+        request.getRequestId(),
+        request.getTemperament(),
+        request.getTemperament() == null ? null : request.getTemperament().length(),
+        request.getOrigin(),
+        request.getOrigin() == null ? null : request.getOrigin().length());
     log.info("Submitting async request: requestId={}", request.getRequestId());
     asyncRequestPublisher.publish(request);
     log.info("Async request published successfully: requestId={}", request.getRequestId());
@@ -32,10 +39,12 @@ public class AsyncRequestServiceImpl implements AsyncRequestService {
   @Override
   public void process(AsyncBreedRequest request) {
     log.info(
-        "Processing async request: requestId={}, temperament={}, origin={}",
+        "Async search params: requestId={}, temperament='{}' (len={}), origin='{}' (len={})",
         request.getRequestId(),
         request.getTemperament(),
-        request.getOrigin());
+        request.getTemperament() == null ? null : request.getTemperament().length(),
+        request.getOrigin(),
+        request.getOrigin() == null ? null : request.getOrigin().length());
 
     List<Breed> breeds =
         breedRepository

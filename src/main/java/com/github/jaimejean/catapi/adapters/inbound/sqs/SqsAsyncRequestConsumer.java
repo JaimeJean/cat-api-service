@@ -20,7 +20,13 @@ public class SqsAsyncRequestConsumer {
   @SqsListener("${catapi.async.sqs-queue-name}")
   public void onMessage(AsyncBreedRequest request, @Header("id") String messageId) {
     log.info(
-        "Message received from SQS: messageId={}, requestId={}", messageId, request.getRequestId());
+        "Consumer received: requestId={}, email='{}', temperament='{}' (len={}), origin='{}' (len={})",
+        request.getRequestId(),
+        request.getEmail(),
+        request.getTemperament(),
+        request.getTemperament() == null ? null : request.getTemperament().length(),
+        request.getOrigin(),
+        request.getOrigin() == null ? null : request.getOrigin().length());
 
     if (processedMessageStore.exists(messageId)) {
       log.warn("Duplicate message detected, skipping: messageId={}", messageId);

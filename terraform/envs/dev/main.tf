@@ -113,10 +113,9 @@ module "alb" {
 module "observability" {
   source = "../../modules/observability"
 
-  project_name          = var.project_name
-  environment           = var.environment
-  log_retention_in_days = var.log_retention_in_days
-
+  project_name            = var.project_name
+  environment             = var.environment
+  log_retention_in_days   = var.log_retention_in_days
   alb_arn_suffix          = module.alb.alb_arn_suffix
   target_group_arn_suffix = module.alb.target_group_arn_suffix
   sqs_queue_name          = module.sqs.queue_name
