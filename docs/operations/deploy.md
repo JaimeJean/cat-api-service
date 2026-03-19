@@ -188,34 +188,53 @@ terraform init
 
 # 7. Fase 1 — criar base para publicar imagem
 
-Na primeira etapa, são provisionados apenas os recursos mínimos para permitir o push da imagem e a preparação inicial do ambiente:
+Na primeira etapa, são provisionados os recursos mínimos necessários para:
 
-- rede
-- security groups
-- ECR
+- preparar a rede;
+- criar os security groups;
+- criar o repositório ECR;
+- criar o secret da TheCatAPI.
 
-Se o secret da TheCatAPI ainda não existir e fizer parte da criação do ambiente, ele pode ser incluído nessa etapa.  
-Se o secret já existir fora do state atual, o ideal é importá-lo antes do apply ou mantê-lo fora dessa execução inicial.
+Essa etapa existe para garantir que:
+- a imagem possa ser publicada no ECR antes da criação do ECS;
+- o secret necessário pela aplicação já exista antes do deploy completo.
 
-## 7.1 Plan da fase 1
+## 7.1 Quando a secret ainda não existe
+
+Se a secret da TheCatAPI **ainda não existir**, ela deve ser criada já nesta fase.
+
+### Plan da fase 1
 
 ```powershell
-terraform plan -target="module.network" -target="module.security" -target="module.ecr"
+terraform plan -target="module.network" -target="module.security" -target="module.ecr" -target="module.thecatapi_secret"
 ```
 
-## 7.2 Apply da fase 1
+### Apply da fase 1
 
 ```powershell
-terraform apply -target="module.network" -target="module.security" -target="module.ecr"
+terraform apply -target="module.network" -target="module.security" -target="module.ecr" -target="module.thecatapi_secret"
 ```
+
+## 7.2 Quando a secret já existe fora do state
+
+Se a secret da TheCatAPI **já existir** na AWS, mas não estiver no state atual do Terraform, o ideal é:
+
+1. importá-la para o state antes do apply;
+2. ou, se necessário, mantê-la fora dessa execução específica.
+
+Exemplo de import:
+
+```powershell
+terraform import module.thecatapi_secret.aws_secretsmanager_secret.this "<SECRET_ARN>"
+```
+
+Depois disso, o `terraform apply` pode ser executado normalmente.
 
 ---
 
-# 8. Secret da TheCatAPI
+# 8. Preencher o valor da API key no Secrets Manager
 
-Se o secret da TheCatAPI ainda não existir, ele deve ser criado e preenchido antes da fase completa do deploy.
-
-O valor real da API key deve ser salvo no AWS Secrets Manager.
+Após a criação da secret, é necessário preencher o valor real da API key da TheCatAPI no AWS Secrets Manager.
 
 Isso pode ser feito:
 
@@ -228,15 +247,22 @@ Exemplo via CLI:
 aws secretsmanager put-secret-value --secret-id <THECATAPI_SECRET_NAME> --secret-string "SUA_API_KEY_AQUI"
 ```
 
-## 8.1 Caso o secret já exista
+## 8.1 Observação importante
 
-Se o secret já existir e tiver sido removido do state do Terraform, ele pode ser reimportado com:
+A criação do recurso Secret no Terraform **não preenche automaticamente** o valor da chave.  
+Por isso, esse passo é obrigatório antes da fase completa do deploy, caso a aplicação dependa da variável `CAT_API_KEY`.
 
-```powershell
-terraform import module.thecatapi_secret.aws_secretsmanager_secret.this "<SECRET_ARN>"
-```
+## 8.2 Resultado esperado ao final da fase 1
 
-Depois disso, o `terraform apply` pode ser executado normalmente.
+Ao concluir a fase 1, o ambiente já deve ter:
+
+- rede criada;
+- security groups criados;
+- repositório ECR criado;
+- secret da TheCatAPI criado;
+- valor real da API key salvo no Secrets Manager.
+
+Com isso, a imagem já pode ser publicada no ECR e o restante da infraestrutura pode ser provisionado na fase 2.
 
 ---
 
