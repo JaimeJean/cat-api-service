@@ -36,13 +36,13 @@ O ambiente local utiliza:
 
 Na raiz do projeto:
 
-```bash
+```powershell
 mvn clean package
 ```
 
 Se necessário pular testes:
 
-```bash
+```powershell
 mvn clean package -DskipTests
 ```
 
@@ -50,20 +50,20 @@ mvn clean package -DskipTests
 
 ## 1.4 Subir o ambiente local
 
-```bash
+```powershell
 docker compose up --build
 ```
 
 Se quiser forçar rebuild completo sem cache da imagem:
 
-```bash
+```powershell
 docker compose build --no-cache
 docker compose up
 ```
 
 Se quiser limpar volumes e subir do zero:
 
-```bash
+```powershell
 docker compose down -v
 docker compose build --no-cache
 docker compose up
@@ -110,7 +110,7 @@ Content-Type: application/json
 Body:
 ```json
 {
-  "email": "jaime.jean@hotmail.com",
+  "email": "usuario@dominio.com",
   "origin": "Egypt"
 }
 ```
@@ -129,6 +129,7 @@ A estratégia adotada foi:
 2. publicar a imagem da aplicação no ECR;
 3. provisionar a infraestrutura completa.
 
+Essa abordagem evita comentar e descomentar módulos do Terraform e reduz risco de erro humano durante o processo.
 
 ---
 
@@ -168,9 +169,9 @@ O bucket do backend precisa existir antes da inicialização do ambiente `dev`.
 # 6. Inicialização do Terraform
 
 ## 6.1 Bootstrap
-Na pasta `terraform/bootstrap` :
+Na pasta de bootstrap:
 
-```bash
+```powershell
 terraform init
 terraform plan
 terraform apply
@@ -179,7 +180,7 @@ terraform apply
 ## 6.2 Ambiente dev
 Na pasta `terraform/envs/dev`:
 
-```bash
+```powershell
 terraform init
 ```
 
@@ -192,31 +193,29 @@ Na primeira etapa, são provisionados apenas os recursos mínimos para permitir 
 - rede
 - security groups
 - ECR
-- secret da TheCatAPI
 
-Comandos:
+Se o secret da TheCatAPI ainda não existir e fizer parte da criação do ambiente, ele pode ser incluído nessa etapa.  
+Se o secret já existir fora do state atual, o ideal é importá-lo antes do apply ou mantê-lo fora dessa execução inicial.
 
-```bash
-terraform fmt -recursive
-terraform validate
-terraform plan \
-  -target=module.network \
-  -target=module.security \
-  -target=module.ecr \
-  -target=module.thecatapi_secret
+## 7.1 Plan da fase 1
 
-terraform apply \
-  -target=module.network \
-  -target=module.security \
-  -target=module.ecr \
-  -target=module.thecatapi_secret
+```powershell
+terraform plan -target="module.network" -target="module.security" -target="module.ecr"
+```
+
+## 7.2 Apply da fase 1
+
+```powershell
+terraform apply -target="module.network" -target="module.security" -target="module.ecr"
 ```
 
 ---
 
-# 8. Preencher o secret da TheCatAPI
+# 8. Secret da TheCatAPI
 
-Após a criação do secret, é necessário preencher o valor real da API key no AWS Secrets Manager.
+Se o secret da TheCatAPI ainda não existir, ele deve ser criado e preenchido antes da fase completa do deploy.
+
+O valor real da API key deve ser salvo no AWS Secrets Manager.
 
 Isso pode ser feito:
 
@@ -225,11 +224,19 @@ Isso pode ser feito:
 
 Exemplo via CLI:
 
-```bash
-aws secretsmanager put-secret-value \
-  --secret-id cat-api-case-dev-thecatapi-key \
-  --secret-string "SUA_API_KEY_AQUI"
+```powershell
+aws secretsmanager put-secret-value --secret-id <THECATAPI_SECRET_NAME> --secret-string "SUA_API_KEY_AQUI"
 ```
+
+## 8.1 Caso o secret já exista
+
+Se o secret já existir e tiver sido removido do state do Terraform, ele pode ser reimportado com:
+
+```powershell
+terraform import module.thecatapi_secret.aws_secretsmanager_secret.this "<SECRET_ARN>"
+```
+
+Depois disso, o `terraform apply` pode ser executado normalmente.
 
 ---
 
@@ -237,7 +244,7 @@ aws secretsmanager put-secret-value \
 
 Na raiz do projeto:
 
-```bash
+```powershell
 mvn clean package -DskipTests
 docker build --no-cache -t cat-api-service .
 ```
@@ -248,42 +255,80 @@ docker build --no-cache -t cat-api-service .
 
 ## 10.1 Login no ECR
 
-Exemplo:
+Utilize o domínio do registry da sua conta AWS na região onde o repositório foi criado.
 
-```bash
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com
+```powershell
+aws ecr get-login-password --region <AWS_REGION> | docker login --username AWS --password-stdin <ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com
 ```
 
 ---
 
 ## 10.2 Tag da imagem
 
-```bash
-docker tag cat-api-service:latest <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/<REPOSITORY_NAME>:latest
+A imagem local criada no build pode ter um nome como:
+
+```text
+cat-api-service:latest
+```
+
+Ela deve ser tagueada com a **URI real do repositório ECR**.
+
+Essa URI pode ser obtida:
+- pelo console da AWS;
+- pelo output do Terraform, por exemplo `ecr_repository_url`.
+
+Exemplo:
+
+```powershell
+docker tag cat-api-service:latest <ECR_REPOSITORY_URL>:latest
 ```
 
 ---
 
 ## 10.3 Push da imagem
 
-```bash
-docker push <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/<REPOSITORY_NAME>:latest
+Depois de taguear a imagem com a URI correta do repositório, faça o push:
+
+```powershell
+docker push <ECR_REPOSITORY_URL>:latest
 ```
+
+---
+
+## 10.4 Observação importante
+
+O nome da imagem local e o nome do repositório remoto não precisam ser iguais.
+
+Exemplo:
+- imagem local: `cat-api-service:latest`
+- repositório remoto: `<ECR_REPOSITORY_URL>:latest`
+
+O que importa para o push é utilizar a **URI exata do repositório ECR**.
 
 ---
 
 # 11. Fase 2 — criar restante da infraestrutura
 
-Depois da imagem já estar publicada no ECR, provisionar a infraestrutura completa:
+Depois da imagem já estar publicada no ECR, provisionar a infraestrutura completa.
 
-```bash
-terraform fmt -recursive
-terraform validate
+Se o secret da TheCatAPI já existir e não estiver sendo criado nessa execução, ele pode ficar fora do comando com `-target`.
+
+## 11.1 Apply da fase 2 sem recriar o secret
+
+```powershell
+terraform apply -target="module.dynamodb" -target="module.sqs" -target="module.rds" -target="module.iam" -target="module.alb" -target="module.observability" -target="module.ses" -target="module.ecs"
+```
+
+## 11.2 Apply completo
+
+Se todos os recursos necessários estiverem presentes no state, inclusive o secret, também é possível executar:
+
+```powershell
 terraform plan
 terraform apply
 ```
 
-Nesta etapa entram os recursos como:
+Nesta etapa entram recursos como:
 
 - RDS
 - DynamoDB
@@ -338,7 +383,7 @@ O ALB utiliza como health check:
 /actuator/health
 ```
 
-A task ECS também foi preparada para health check interno com `curl` na própria aplicação.
+A task ECS também pode utilizar health check interno com `curl` na própria aplicação, desde que a imagem contenha esse binário.
 
 ---
 
@@ -355,7 +400,7 @@ Após o `apply`, validar na seguinte ordem:
 - logs no log group:
 
 ```text
-/ecs/cat-api-case-dev-app
+/ecs/<project_name>-<environment>-app
 ```
 
 ## 15.3 ALB / Target Group
@@ -381,7 +426,7 @@ Validar:
 
 # 16. Observação sobre SES
 
-Durante os testes, o SES foi utilizado com identidade verificada.
+Durante os testes, o SES foi utilizado com identidades verificadas.
 
 Se a conta estiver em sandbox:
 - o remetente precisa estar verificado;
@@ -405,9 +450,11 @@ Assim, o mesmo conjunto de requests pode ser usado tanto localmente quanto no am
 
 Para evitar custos desnecessários após os testes:
 
-```bash
+```powershell
 terraform destroy
 ```
+
+Se houver recursos que devam ser preservados, como um secret já existente fora do state, eles não devem estar sob gerenciamento ativo do Terraform no momento do destroy.
 
 ---
 

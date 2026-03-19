@@ -419,6 +419,10 @@ Body:
 - a mensagem deve ser reprocessada conforme política da fila
 - após exceder o número máximo de tentativas, a mensagem pode ser encaminhada para a DLQ
 
+**Observação:** Nos testes do fluxo assíncrono, a validação principal do envio foi feita pelos logs da aplicação e pelo CloudWatch. Quando o log registra Notification sent successfully via SES,
+isso confirma que a aplicação processou a mensagem corretamente e que o Amazon SES aceitou o envio. Em alguns testes, a mensagem não apareceu imediatamente na caixa de entrada do destinatário,
+comportamento compatível com regras de entregabilidade/filtragem do provedor de e-mail, e não necessariamente com falha do backend.
+
 ---
 
 ### 7.5 Requisição assíncrona com payload inválido
